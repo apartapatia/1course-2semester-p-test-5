@@ -1,0 +1,8 @@
+[project]
+name = "gitea-tests"
+version = "0.1.0"
+dependencies = [
+    "playwright",
+    "pytest-playwright",
+    "python-dotenv",
+]
