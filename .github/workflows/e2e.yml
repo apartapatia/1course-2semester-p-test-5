@@ -82,7 +82,7 @@ jobs:
 
     # отдельный экшн для хелсчека
       - name: Wait for Gitea
-        uses: ./.github/actions/wait-gitea
+        uses: ./.github/actions/gitea-healthcheck
         with:
           gitea-url: ${{ env.GITEA_URL }}
           timeout-ms: ${{ env.GITEA_WAIT_TIMEOUT }}
