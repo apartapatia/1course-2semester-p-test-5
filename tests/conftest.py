@@ -131,7 +131,8 @@ def gitea_config():
 @pytest.fixture(scope="session", autouse=True)
 def auth_storage_state():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=cfg.HEADLESS)
+        browser_type = getattr(p, cfg.BROWSER)
+        browser = browser_type.launch(headless=cfg.HEADLESS)
         context = browser.new_context()
         page = context.new_page()
 
