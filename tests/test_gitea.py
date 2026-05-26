@@ -11,6 +11,7 @@ from conftest import (
     random_string,
 )
 
+
 # параметрезированный тест для будущего масшатибрования
 @pytest.mark.anonymous
 @pytest.mark.parametrize(
@@ -35,8 +36,8 @@ def test_homepage_navigation_links(page: Page):
 @pytest.mark.anonymous
 def test_sign_up_form_fields(page: Page):
     page.goto(f"{cfg.GITEA_URL}/user/sign_up", wait_until="load")
-    expect(page.get_by_label("Username")).to_be_visible()
-    expect(page.get_by_label("Email")).to_be_visible()
+    expect(page.get_by_role("textbox", name="Username")).to_be_visible()
+    expect(page.get_by_role("textbox", name="Email")).to_be_visible()
     expect(page.get_by_label("Password", exact=True)).to_be_visible()
     expect(page.get_by_label("Confirm Password")).to_be_visible()
 
@@ -44,7 +45,7 @@ def test_sign_up_form_fields(page: Page):
 @pytest.mark.anonymous
 def test_login_form_validation(page: Page):
     page.goto(f"{cfg.GITEA_URL}/user/login", wait_until="load")
-    page.get_by_label("Username").fill("invalid_user_123")
+    page.get_by_role("textbox", name="Username").fill("invalid_user_123")
     page.get_by_label("Password").fill("wrong_password")
     page.get_by_role("button", name="Sign In").click()
     expect(page.get_by_text("Username or password is incorrect.")).to_be_visible()
@@ -79,7 +80,7 @@ def test_create_repository(logged_in_page: Page, cleanup_repos):
     logged_in_page.goto(f"{cfg.GITEA_URL}/repo/create", wait_until="load")
     expect(logged_in_page.get_by_role("heading", name="New Repository")).to_be_visible()
 
-    logged_in_page.get_by_label("Repository Name").fill(repo_name)
+    logged_in_page.get_by_role("textbox", name="Repository Name").fill(repo_name)
     logged_in_page.locator("#auto-init input").uncheck(force=True)
     logged_in_page.get_by_role("button", name="Create Repository").click()
     logged_in_page.wait_for_load_state("load")
@@ -94,7 +95,7 @@ def test_create_repository_with_readme(logged_in_page: Page, cleanup_repos):
     cleanup_repos.append(repo_name)
 
     logged_in_page.goto(f"{cfg.GITEA_URL}/repo/create", wait_until="load")
-    logged_in_page.get_by_label("Repository Name").fill(repo_name)
+    logged_in_page.get_by_role("textbox", name="Repository Name").fill(repo_name)
     logged_in_page.locator("#auto-init input").check(force=True)
     logged_in_page.get_by_role("button", name="Create Repository").click()
     logged_in_page.wait_for_load_state("load")
@@ -174,7 +175,7 @@ def test_repository_milestone(
     milestone_title = f"v1.0 Release {random_string()}"
     logged_in_page.get_by_role("link", name="New Milestone").click()
     logged_in_page.wait_for_load_state("load")
-    logged_in_page.get_by_label("Title").fill(milestone_title)
+    logged_in_page.get_by_role("textbox", name="Title").fill(milestone_title)
     logged_in_page.get_by_role("button", name="Create Milestone").click()
     logged_in_page.wait_for_load_state("load")
 

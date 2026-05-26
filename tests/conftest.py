@@ -136,15 +136,15 @@ def auth_storage_state():
         page = context.new_page()
 
         page.goto(f"{cfg.GITEA_URL}/user/login", wait_until="load")
-        page.get_by_label("Username").fill(cfg.GITEA_USER)
+        page.get_by_role("textbox", name="Username").fill(cfg.GITEA_USER)
         page.get_by_label("Password").fill(cfg.GITEA_PASS)
         page.get_by_role("button", name="Sign In").click()
         page.wait_for_load_state("load")
 
         if "/user/login" in page.url:
             page.goto(f"{cfg.GITEA_URL}/user/sign_up", wait_until="load")
-            page.get_by_label("Username").fill(cfg.GITEA_USER)
-            page.get_by_label("Email").fill(cfg.GITEA_EMAIL)
+            page.get_by_role("textbox", name="Username").fill(cfg.GITEA_USER)
+            page.get_by_role("textbox", name="Email").fill(cfg.GITEA_EMAIL)
             page.get_by_label("Password", exact=True).fill(cfg.GITEA_PASS)
             page.get_by_label("Confirm Password").fill(cfg.GITEA_PASS)
             page.get_by_role("button", name="Register").click()
