@@ -142,6 +142,10 @@ def auth_storage_state():
 
         status = response.status
         if status != 200 and status != 302 and status != 303:
+            page.goto(f"{cfg.GITEA_URL}/install", wait_until="load")
+            page.get_by_role("button", name="Install Gitea").click()
+            page.wait_for_load_state("networkidle")
+
             page.goto(f"{cfg.GITEA_URL}/user/sign_up", wait_until="load")
             page.get_by_role("textbox", name="Username").fill(cfg.GITEA_USER)
             page.get_by_role("textbox", name="Email").fill(cfg.GITEA_EMAIL)
