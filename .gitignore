@@ -1,0 +1,11 @@
+.env
+.venv/
+uv.lock
+
+tests/.auth/
+tests/screenshots/
+tests/videos/
+tests/pages/
+
+__pycache__/
+.pytest_cache/
