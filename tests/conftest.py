@@ -135,13 +135,13 @@ def auth_storage_state():
         context = browser.new_context()
         page = context.new_page()
 
-        response = page.request.post(
-            f"{cfg.GITEA_URL}/user/login",
-            form={"user_name": cfg.GITEA_USER, "password": cfg.GITEA_PASS},
-            max_redirects=0,
-        )
+        page.goto(f"{cfg.GITEA_URL}/user/login", wait_until="load")
+        page.get_by_label("Username").fill(cfg.GITEA_USER)
+        page.get_by_label("Password").fill(cfg.GITEA_PASS)
+        page.get_by_role("button", name="Sign In").click()
+        page.wait_for_load_state("load")
 
-        if response.status not in (302, 303):
+        if "/user/login" in page.url:
             page.goto(f"{cfg.GITEA_URL}/user/sign_up", wait_until="load")
             page.get_by_label("Username").fill(cfg.GITEA_USER)
             page.get_by_label("Email").fill(cfg.GITEA_EMAIL)
