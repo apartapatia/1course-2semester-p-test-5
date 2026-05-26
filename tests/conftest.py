@@ -208,5 +208,5 @@ def cleanup_repos(api_context: APIRequestContext):
     for repo_name in created_repos:
         try:
             api_delete_repo(api_context, cfg.GITEA_USER, repo_name)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"\n[Cleanup] FAILED to delete repo {repo_name}: {e}")
