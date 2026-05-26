@@ -1,0 +1,37 @@
+name: Wait Gitea Healthcheck
+
+inputs:
+  gitea-url:
+    required: false
+    default: http://localhost:3000
+  timeout-ms:
+    required: false
+    default: "60000"
+  interval-ms:
+    required: false
+    default: "2000"
+
+runs:
+  using: composite
+  steps:
+    - name: Wait for Gitea
+      shell: bash
+      env:
+        GITEA_URL: ${{ inputs.gitea-url }}
+        TIMEOUT_MS: ${{ inputs.timeout-ms }}
+        INTERVAL_MS: ${{ inputs.interval-ms }}
+      run: |
+        timeout_sec=$((TIMEOUT_MS / 1000))
+        interval_sec=$((INTERVAL_MS / 1000))
+        elapsed=0
+        while [ $elapsed -lt $timeout_sec ]; do
+          if curl -sf "$GITEA_URL/" > /dev/null 2>&1; then
+            echo "Gitea is ready after ${elapsed}s"
+            exit 0
+          fi
+          echo "Waiting for Gitea... (${elapsed}s/${timeout_sec}s)"
+          sleep $interval_sec
+          elapsed=$((elapsed + interval_sec))
+        done
+        echo "Gitea did not become ready within ${timeout_sec}s"
+        exit 1

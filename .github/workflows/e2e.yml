@@ -1,0 +1,102 @@
+name: playwright E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      gitea-version:
+        description: Gitea Docker image tag
+        required: false
+        default: latest
+      browser:
+        description: Playwright browser
+        required: false
+        default: chromium
+        type: choice
+        options:
+          - chromium
+          - firefox
+          - webkit
+
+env:
+  GITEA_URL: http://localhost:3000
+  GITEA_USER: testuser
+  GITEA_PASS: testpass123
+  GITEA_EMAIL: testuser@test.com
+  GITEA_VERSION: ${{ inputs.gitea-version || 'latest' }}
+  BROWSER: ${{ inputs.browser || 'chromium' }}
+  HEADLESS: true
+  RECORD_VIDEO: false
+  GITEA_WAIT_TIMEOUT: 60000
+  GITEA_WAIT_INTERVAL: 2000
+
+jobs:
+  # проверяем что в принципе запускается gitea
+  smoke:
+    name: Gitea health check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    services:
+      gitea:
+        image: gitea/gitea:${{ inputs.gitea-version || 'latest' }}
+        ports:
+          - 3000:3000
+        options: >-
+          --health-cmd "curl -f http://localhost:3000/ || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Verify Gitea responds
+        run: curl -sf http://localhost:3000/ | head -c 100
+
+  e2e:
+    name: playwright E2E — ${{ inputs.browser || 'chromium' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: smoke
+
+    services:
+      gitea:
+        image: gitea/gitea:${{ inputs.gitea-version || 'latest' }}
+        ports:
+          - 3000:3000
+        options: >-
+          --health-cmd "curl -f http://localhost:3000/ || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python & Playwright
+        uses: ./.github/actions/setup-python
+        with:
+          browser: ${{ inputs.browser || 'chromium' }}
+
+    # отдельный экшн для хелсчека
+      - name: Wait for Gitea
+        uses: ./.github/actions/wait-gitea
+        with:
+          gitea-url: ${{ env.GITEA_URL }}
+          timeout-ms: ${{ env.GITEA_WAIT_TIMEOUT }}
+          interval-ms: ${{ env.GITEA_WAIT_INTERVAL }}
+
+      - name: Run Playwright tests
+        run: uv run pytest tests/ --browser=${{ env.BROWSER }} -v
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ env.BROWSER }}-artifacts
+          path: |
+            tests/screenshots/
+            tests/pages/
+          retention-days: 7
